@@ -1,31 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
-import { current } from '@reduxjs/toolkit';
+import dynamic from "next/dynamic";
+
 
 const NavBar = () => {
-	const [currentTime, setCurrentTime] = useState(new Date());
-
-	setInterval(() => {
-		setCurrentTime(new Date());
-	}, 1000);
-
-	const dateTimeOptions: Intl.DateTimeFormatOptions = {
-		weekday: 'short',
-		month: 'long',
-		day: 'numeric',
-		hour: 'numeric',
-		minute: 'numeric',
-		hour12: true,
-	}
+	const DynamicClock = dynamic(
+		() => import('./Clock'),
+		{ssr: false}
+	);
 
 	return (
 		<>
-			<div className='bg-slate-800 text-white pl-3 py-3 flex items-center'>
-				<span className='text-2xl'>
+			<div className='w-full h-full bg-slate-800 text-white pl-5 py-1 flex items-center'>
+				<button className='text-2xl'>
 					<FontAwesomeIcon icon={faBars} />
-				</span>
-				<span className='ml-4'>{currentTime.toLocaleString('ko-KR', dateTimeOptions)}</span>
+				</button>
+				<DynamicClock />
 			</div>
 		</>
 	);

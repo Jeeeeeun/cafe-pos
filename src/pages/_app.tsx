@@ -2,7 +2,7 @@ import '@/styles/globals.css';
 import 'tailwindcss/tailwind.css';
 import type { AppProps } from 'next/app';
 import { Provider } from 'react-redux';
-//import store from '@/store/store';
+import store from '@/store/store';
 
 const App = ({ Component, pageProps }: AppProps) => {
 	return (
@@ -15,9 +15,9 @@ const App = ({ Component, pageProps }: AppProps) => {
 			}
 		`}
 			</style>
-			{/* <Provider store={store}> */}
-			<Component {...pageProps} />
-			{/* </Provider> */}
+			<Provider store={store}>
+				<Component {...pageProps} />
+			</Provider>
 		</>
 	)
 };
