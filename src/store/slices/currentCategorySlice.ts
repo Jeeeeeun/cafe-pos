@@ -22,13 +22,8 @@ const currentCategorySlice = createSlice({
 		currentCategory(state, action: PayloadAction<number>) {
 
 			// 상태 변경 이전의 값
-			console.log("상태 - " + state);
-
 			// action.type 문자열은 대개 'sliceName/reducerName'으로 작성되어 있음.
-			console.log("액션 타입 - " + action.type); 
-
-			// 상태 변경 이후의 값
-			console.log("액션.페이로드 - " + action.payload);
+			// 상태 변경 이후의 값: action.payload
 
 			// 전달받은 payload 값을 그대로 반환하여 상태를 변경함
 			return action.payload;

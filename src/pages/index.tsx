@@ -1,5 +1,5 @@
 import React from 'react';
-import MenuPanel from '@/components/MenuPanel';
+import MenuPanel from '@/components/MenuPanel/MenuPanel';
 
 const Home = () => {
 
