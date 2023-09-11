@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { RootState } from '@/store/store';
+import { colorVarients } from '@/utils/colorVarient';
+import { showFilledPositions } from '@/store/slices/menuEditorSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
-interface menus {
+interface Menus {
 	menu_id: number;
 	menu_category_id: number;
 	menu_name: string;
@@ -18,20 +20,6 @@ interface menus {
 }
 
 const MenuBlock = () => {
-
-	const colorVarients: { [key: string]: string } = {
-		white: 'bg-white text-black',
-		orange: 'bg-orange-400 text-white',
-		yellow: 'bg-yellow-200 text-black',
-		lime: 'bg-lime-400 text-white',
-		cyan: 'bg-cyan-500 text-white',
-		blue: 'bg-blue-500 text-white',
-		indigo: 'bg-indigo-500 text-white',
-		pink: 'bg-pink-300 text-white',
-		brown: 'bg-amber-700 text-white',
-		gray: 'bg-zinc-400 text-white',
-		transparent: 'bg-transparent text-transparent'
-	}
 
 	const gridCells = Array.from({ length: 35 });
 
@@ -49,7 +37,9 @@ const MenuBlock = () => {
 
 	const currentCategoryId = useSelector((state: RootState) => state.currentCategory);
 
-	const [menus, setMenus] = useState<menus[]>([]);
+	const dispatch = useDispatch();
+
+	const [menus, setMenus] = useState<Menus[]>([]);
 
 	const filteredMenus = menus.filter((menu) => menu.menu_category_id === currentCategoryId);
 
@@ -65,6 +55,8 @@ const MenuBlock = () => {
 
 				let response = await axios.get("http://localhost:8080/api/showAllMenus");
 				setMenus(response.data);
+
+				dispatch(showFilledPositions(response.data));
 
 			} catch (e) {
 

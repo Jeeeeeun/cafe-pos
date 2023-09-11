@@ -5,7 +5,7 @@ const Home = () => {
 
 	return (
 		<>
-			<div className='md:container md:mx-auto h-screen'>
+			<div className='xl:container lg:mx-auto h-screen'>
 				<MenuPanel />
 			</div>
 		</>

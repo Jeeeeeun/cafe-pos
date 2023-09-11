@@ -4,37 +4,35 @@ import { faPen, faChevronLeft, faChevronRight, faChevronUp, faChevronDown, faTra
 import NavBar from '@/components/NavBar/NavBar';
 import Category from '@/components/MenuPanel/Category';
 import MenuBlock from '@/components/MenuPanel/MenuBlock';
-import MenuEditor from '@/components/MenuEditor';
+import MenuEditorForm from '@/components/MenuEditorForm';
 import NumberInput from '@/components/NumberInput';
 
-
-
-const MenuPanel = ({}) => {
+const MenuPanel = ({ }) => {
 
 	const [menuEditorWindow, setMenuEditorWindow] = useState(false);
 
 	return (
 		<>
-		{menuEditorWindow && <MenuEditor setMenuEditor={setMenuEditorWindow} />}
+			{menuEditorWindow && <MenuEditorForm setMenuEditor={setMenuEditorWindow} />}
 
-			<div className='w-full h-full grid grid-cols-10 z-20'>
-				<div className='w-full h-full col-span-10'>
+			<div className='w-full h-full grid grid-cols-10 grid-rows-10 z-20'>
+				<div className='w-full col-span-10 row-span-1'>
 					<NavBar />
 				</div>
-				<div className='w-full h-full col-span-7 grid grid-rows-10 bg-zinc-200 text-black'>
+				<div className='w-full col-span-7 grid grid-rows-10 row-span-9 bg-zinc-200 text-black'>
 					<div className='w-full h-full row-span-1'>
 						<Category />
 					</div>
 					<div className='flex flex-row'>
-					<button className='pr-3 pl-5'>
-						<FontAwesomeIcon icon={faChevronLeft} />
-					</button>
-					<div className='w-full row-span-8 grid grid-rows-5 grid-cols-7 p-3 gap-2'>
-						<MenuBlock />
-					</div>
-					<button className='pr-5 pl-3'>
-						<FontAwesomeIcon icon={faChevronRight} />
-					</button>
+						<button className='pr-3 pl-5'>
+							<FontAwesomeIcon icon={faChevronLeft} />
+						</button>
+						<div className='w-full row-span-8 grid grid-rows-5 grid-cols-7 p-3 gap-2'>
+							<MenuBlock />
+						</div>
+						<button className='pr-5 pl-3'>
+							<FontAwesomeIcon icon={faChevronRight} />
+						</button>
 					</div>
 					<div className='w-full row-span-1 flex flex-row justify-between m-2 p-2'>
 						<button className='pl-3'>

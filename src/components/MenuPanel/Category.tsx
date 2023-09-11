@@ -3,7 +3,7 @@ import axios from 'axios';
 import { RootState } from '@/store/store';
 import { useSelector, useDispatch } from 'react-redux';
 import { currentCategory } from '@/store/slices/currentCategorySlice';
-import { menuCategoryLists } from '@/store/slices/menuEditorSlice';
+import { MenuCategoryLists } from '@/store/slices/menuEditorSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
@@ -34,7 +34,7 @@ const Category = () => {
 				setMenuCategories(response.data as menuCategories[]);
 
 				// store에 저장할 목적
-				dispatch(menuCategoryLists(response.data));
+				dispatch(MenuCategoryLists(response.data));
 		
 			} catch (err) {
 				console.error('메뉴 카테고리 목록을 가져오는 데 실패했습니다.');
