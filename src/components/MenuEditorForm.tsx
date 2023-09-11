@@ -7,8 +7,8 @@ import { colorVarients } from '@/utils/colorVarient';
 import { useSelector, useDispatch } from 'react-redux';
 import { showFilledPositions, selectedMenuPosition, allMenuLists } from '@/store/slices/menuEditorSlice';
 
-interface MenuEditorProps {
-	setMenuEditor: React.Dispatch<React.SetStateAction<boolean>>;
+interface MenuEditorFormProps {
+	setMenuEditorForm: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface MenuData {
@@ -18,7 +18,7 @@ interface MenuData {
 	menu_column: number;
 }
 
-const MenuEditorForm: React.FC<MenuEditorProps & { type?: 'create' | 'edit' }> = ({ setMenuEditor, type = 'edit' }) => {
+const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' }> = ({ setMenuEditorForm, type = 'create' }) => {
 
 	// 드롭박스에 넣을 카테고리 목록을 redux store에서 불러오기
 	const menuCategories = useSelector((state: RootState) => state.menuEditor.menuCategories);
@@ -199,10 +199,10 @@ const MenuEditorForm: React.FC<MenuEditorProps & { type?: 'create' | 'edit' }> =
 					menu_column: column
 				});
 
-				console.log('메뉴 추가 성공: ', response.data);
+				console.log('메뉴 추가에 성공했습니다. ', response.data);
 
 				// 메뉴 에디터 끄기
-				setMenuEditor(false);
+				setMenuEditorForm(false);
 
 				// 추가 데이터 redux에 포함하기
 				dispatch(allMenuLists(response.data));
@@ -221,7 +221,7 @@ const MenuEditorForm: React.FC<MenuEditorProps & { type?: 'create' | 'edit' }> =
 	return (
 		<div className={`flex flex-col bg-white text-blac rounded-2xl w-2/5 ${type === 'create' ? 'h-5/6' : 'h-11/12'}  px-7 py-5 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 select-none`}>
 			<div className='w-full text-right'>
-				<FontAwesomeIcon icon={faXmark} className='text-black text-2xl' onClick={() => setMenuEditor(false)} />
+				<FontAwesomeIcon icon={faXmark} className='text-black text-2xl' onClick={() => setMenuEditorForm(false)} />
 			</div>
 			<div className='flex flex-row px-8 my-1 items-center'>
 				<label htmlFor='category' className='w-1/3 text-black font-bold py-2'>카테고리</label>

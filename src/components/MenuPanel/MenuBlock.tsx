@@ -4,22 +4,16 @@ import axios from 'axios';
 import { RootState } from '@/store/store';
 import { colorVarients } from '@/utils/colorVarient';
 import { showFilledPositions } from '@/store/slices/menuEditorSlice';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import MenuOrderForm from '@/components/MenuOrderForm'
+import { Menus } from '@/types/menusType';
 
-interface Menus {
-	menu_id: number;
-	menu_category_id: number;
-	menu_name: string;
-	menu_price: number;
-	menu_isFavorite: string;
-	menu_colorScheme: string;
-	menu_page: number;
-	menu_row: number;
-	menu_column: number;
+interface MenuBlockProps {
+	currentMenuPage: number;
+	setCurrentMenuPage: (page: number) => void;
+	setMaxPage: (page: number) => void;
 }
 
-const MenuBlock = () => {
+const MenuBlock = ({ currentMenuPage, setCurrentMenuPage, setMaxPage }: MenuBlockProps) => {
 
 	const gridCells = Array.from({ length: 35 });
 
@@ -40,8 +34,11 @@ const MenuBlock = () => {
 	const dispatch = useDispatch();
 
 	const [menus, setMenus] = useState<Menus[]>([]);
+	const [menuOrderWindow, setMenuOrderWindow] = useState(false);
+	const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
 
-	const filteredMenus = menus.filter((menu) => menu.menu_category_id === currentCategoryId);
+
+	const filteredMenus = menus.filter((menu) => menu.menu_category_id === currentCategoryId && menu.menu_page === currentMenuPage);
 
 	const dummyMenus = [...filteredMenus];
 
@@ -58,6 +55,14 @@ const MenuBlock = () => {
 
 				dispatch(showFilledPositions(response.data));
 
+				const maxPageByCategory = response.data.reduce((max: number, menu: Menus) => {
+					return (menu.menu_category_id === currentCategoryId && menu.menu_page > max)
+						? menu.menu_page :
+						max
+				}, 1);
+
+				setMaxPage(maxPageByCategory);
+
 			} catch (e) {
 
 				console.error("메뉴 목록을 가져오는 데 실패했습니다.");
@@ -67,25 +72,31 @@ const MenuBlock = () => {
 
 		menuLists();
 
-	}, [])
+	}, [currentCategoryId]);
 
 	return (
 		<>
+			{menuOrderWindow && <MenuOrderForm setMenuOrderWindow={setMenuOrderWindow} menuId={selectedMenuId} menus={menus} />}
 			{gridCells.map((_, index) => {
 				const menu = filteredMenus[index];
 
 				if (menu) {
 					return (
-							<button key={`menu-${menu.menu_id}`} className={`w-full h-full rounded-lg p-2 select-none ${colorVarients[menu.menu_colorScheme]}`} style={{ gridRowStart: menu.menu_row, gridColumnStart: menu.menu_column }}>
-								<div className='w-full flex justify-end px-1'>
-									{menu.menu_isFavorite === 'F' ?
-										<img src="/star-regular.svg" alt="empty star" className={'w-5'} /> :
-										<img src="/star-solid.svg" alt="full star" className={'w-5'} />
-									}
-								</div>
-								<div className='px-1'>{menu.menu_name}</div>
-								<div className='px-1'>{menu.menu_price.toLocaleString()}</div>
-							</button>
+						<button key={`menu-${menu.menu_id}`} className={`w-full h-full rounded-lg p-2 select-none ${colorVarients[menu.menu_colorScheme]}`}
+							style={{ gridRowStart: menu.menu_row, gridColumnStart: menu.menu_column }}
+							onClick={() => {
+								setMenuOrderWindow(true);
+								setSelectedMenuId(menu.menu_id);
+							}}>
+							<div className='w-full flex justify-end px-1'>
+								{menu.menu_isFavorite === 'F' ?
+									<img src="/star-regular.svg" alt="empty star" className={'w-5'} /> :
+									<img src="/star-solid.svg" alt="full star" className={'w-5'} />
+								}
+							</div>
+							<div className='px-1'>{menu.menu_name}</div>
+							<div className='px-1'>{menu.menu_price.toLocaleString()}</div>
+						</button>
 					);
 
 				} else {

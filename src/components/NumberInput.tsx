@@ -23,14 +23,14 @@ const NumberInput: React.FC<numericProp> = ({ defaultValue }) => {
 
 	return (
 		<>
-			<div className='w-1/2 flex'>
-				<button className='w-1/4 border border-neutral-500 bg-white rounded-l-md py-1' onClick={down}>
+			<div className='w-1/3 flex'>
+				<button className='w-1/5 border border-neutral-500 bg-white rounded-l-md py-1' onClick={down}>
 					<FontAwesomeIcon icon={faMinus} />
 				</button>
 				<input type="number" className='w-1/3 border border-neutral-500 p-1 text-center' value={value} onChange={(e) => {
 					setValue(Number(e.target.value));
 				}} />
-				<button className='w-1/4 border border-neutral-500 bg-white rounded-r-md py-1' onClick={up}>
+				<button className='w-1/5 border border-neutral-500 bg-white rounded-r-md py-1' onClick={up}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
 			</div>

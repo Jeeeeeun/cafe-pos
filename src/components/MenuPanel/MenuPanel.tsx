@@ -1,19 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faChevronLeft, faChevronRight, faChevronUp, faChevronDown, faTrashCan, faBookmark, faPlus } from '@fortawesome/free-solid-svg-icons';
 import NavBar from '@/components/NavBar/NavBar';
 import Category from '@/components/MenuPanel/Category';
 import MenuBlock from '@/components/MenuPanel/MenuBlock';
 import MenuEditorForm from '@/components/MenuEditorForm';
-import NumberInput from '@/components/NumberInput';
 
-const MenuPanel = ({ }) => {
+
+const MenuPanel = () => {
 
 	const [menuEditorWindow, setMenuEditorWindow] = useState(false);
+	const [currentMenuPage, setCurrentMenuPage] = useState<number>(1);
+	const [maxPage, setMaxPage] = useState<number>(1);
+
+	const showPrevPage = () => {
+		if (currentMenuPage > 1) {
+			setCurrentMenuPage(currentMenuPage - 1);
+		}
+	}
+
+	const showNextPage = () => {
+		if (currentMenuPage < maxPage) {
+			setCurrentMenuPage(currentMenuPage + 1);
+		}
+	}
 
 	return (
 		<>
-			{menuEditorWindow && <MenuEditorForm setMenuEditor={setMenuEditorWindow} />}
+			{menuEditorWindow && <MenuEditorForm setMenuEditorForm={setMenuEditorWindow} />}
 
 			<div className='w-full h-full grid grid-cols-10 grid-rows-10 z-20'>
 				<div className='w-full col-span-10 row-span-1'>
@@ -24,15 +38,15 @@ const MenuPanel = ({ }) => {
 						<Category />
 					</div>
 					<div className='flex flex-row'>
-						<button className='pr-3 pl-5'>
+						{currentMenuPage > 1 && <button className='pr-3 pl-5' onClick={showPrevPage}>
 							<FontAwesomeIcon icon={faChevronLeft} />
-						</button>
+						</button>}
 						<div className='w-full row-span-8 grid grid-rows-5 grid-cols-7 p-3 gap-2'>
-							<MenuBlock />
+							<MenuBlock currentMenuPage={currentMenuPage} setCurrentMenuPage={setCurrentMenuPage} setMaxPage={setMaxPage}/>
 						</div>
-						<button className='pr-5 pl-3'>
+						{currentMenuPage < maxPage && <button className='pr-5 pl-3' onClick={showNextPage}>
 							<FontAwesomeIcon icon={faChevronRight} />
-						</button>
+						</button>}
 					</div>
 					<div className='w-full row-span-1 flex flex-row justify-between m-2 p-2'>
 						<button className='pl-3'>
@@ -64,7 +78,6 @@ const MenuPanel = ({ }) => {
 					</div>
 					<div className='flex flex-col'>
 						<div className='flex justify-between px-5 py-3 bg-blue-100'>
-							<NumberInput defaultValue={1} />
 							<button className='bg-white rounded-md px-3 py-1'>삭제</button>
 						</div>
 					</div>
