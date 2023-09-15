@@ -44,46 +44,19 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 	const [selectedBlockTheme, setSelectedBlockTheme] = useState<string | null>(null);
 
 	// 메뉴 위치
-	let [row, setRow] = useState<number>(0);
-	let [column, setColumn] = useState<number>(0);
-
-	// 컬러 테마 버튼들 다 데려와
-	const colorBtns = document.querySelectorAll('.colorTheme');
+	const [position, setPosition] = useState<{row: number; column: number}>({row: 0, column: 0});
 
 	// 메뉴 블록 컬러 테마 버튼 누를 때
-	const clickBlockTheme = (e: React.MouseEvent<HTMLButtonElement>, theme: string) => {
-
-		// 그 버튼들 중에 선택된 거 있었으면 스타일 다 초기화 해줘
-		colorBtns.forEach(btn => {
-			btn.classList.remove('border-transparent', 'border-black');
-			btn.classList.add('border-transparent');
-		})
-
-		// 선택한 버튼에 스타일 입혀줘
-		e.currentTarget.classList.remove('border-transparent');
-		e.currentTarget.classList.add('border-2', 'border-black');
+	const clickBlockTheme = (theme: string) => {
 
 		// 선택한 버튼의 값으로 selectedBlockTheme 값 바꿔줘
 		setSelectedBlockTheme(theme);
 	}
 
-	// 위치 버튼들 다 데려와
-	const positionBtns = document.querySelectorAll('.positionBtn');
-
 	// 새 메뉴 위치 클릭하면 보이게 만들기
-	const clickPositionBtn = (e: React.MouseEvent<HTMLButtonElement>, menuRow: number, menuColumn: number) => {
+	const clickPositionBtn = (menuRow: number, menuColumn: number) => {
 
-		positionBtns.forEach(btn => {
-			btn.classList.remove('border-neutral-300', 'border-black');
-			btn.classList.add('border-neutral-300');
-		})
-
-		e.currentTarget.classList.remove('border-neutral-300');
-		e.currentTarget.classList.add('border-black');
-
-
-		setRow(menuRow);
-		setColumn(menuColumn);
+		setPosition({row: menuRow, column: menuColumn});
 
 	}
 
@@ -93,27 +66,23 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 	// 초기화 버튼 눌렀을 때
 	const clickResetBtn = (e: React.MouseEvent<HTMLButtonElement>) => {
 
+		// 카테고리 선택 초기화
 		setSelectedCategory(0);
 
+		// 메뉴 이름 초기화
 		setMenuName('');
 
+		// 메뉴 가격 초기화
 		setMenuPrice(0);
 
-		colorBtns.forEach(btn => {
-			btn.classList.remove('border-transparent', 'border-black');
-			btn.classList.add('border-transparent');
-		})
-
+		// 메뉴 블록 배경색 초기화
 		setSelectedBlockTheme(null);
 
+		// 메뉴 페이지 초기화
 		setPageNum('');
-
-		positionBtns.forEach(btn => {
-			btn.classList.remove('border-neutral-300', 'border-black');
-			btn.classList.add('border-neutral-300');
-		})
-		setRow(0);
-		setColumn(0);
+		
+		// 메뉴 위치 초기화
+		setPosition({row: 0, column: 0});
 	}
 
 	const dispatch = useDispatch();
@@ -121,17 +90,10 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 	// 다른 페이지 남은 메뉴 블록 위치 보려고 할 때
 	const showOtherPagePositions = (e: React.ChangeEvent<HTMLInputElement>) => {
 
-		// 입력한 숫자로 페이지 번호 특정하기
-		const selectedPage = Number(e.currentTarget.value);
-
-		// 처음 렌더링된 페이지가 아닌 다른 페이지 데이터로 filtering 하기
-		const otherPagePositions = firstShowPositionsState.filter(position => position.menu_category_id === newSelectedCategory && position.menu_page === selectedPage);
-
 		// 페이지 번호는 입력한 숫자로 바꿔줘 
 		setPageNum(e.currentTarget.value);
 
 	}
-
 
 	const menuBlocks = Array.from({ length: 35 });
 
@@ -152,17 +114,17 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 			if (trimmedName === '') {
 				msgBox.textContent = '메뉴 이름이 입력되지 않았습니다.';
 				msgBox.classList.remove('text-black', 'text-green-600');
-				msgBox.classList.add('text-rose-600');
+				msgBox.classList.add('text-red-500');
 				return true;
 			} else if (!response.data) {
 				msgBox.textContent = '이 메뉴 이름은 사용 가능합니다.';
-				msgBox.classList.remove('text-black', 'text-rose-600');
+				msgBox.classList.remove('text-black', 'text-red-500');
 				msgBox.classList.add('text-green-600');
 				return false;
 			} else {
 				msgBox.textContent = '이미 같은 이름이 존재합니다.';
 				msgBox.classList.remove('text-black', 'text-green-600');
-				msgBox.classList.add('text-rose-600');
+				msgBox.classList.add('text-red-500');
 				return true;
 			}
 
@@ -170,8 +132,6 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 			console.error('메뉴 이름 중복 검사 실패 - ', e);
 		}
 	}
-
-	const numericPage = Number(pageNum);
 
 	// 서버로 데이터 보내자.
 	const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -192,9 +152,9 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 					menu_price: menuPrice,
 					menu_isFavorite: 'F',
 					menu_colorScheme: selectedBlockTheme,
-					menu_page: numericPage,
-					menu_row: row,
-					menu_column: column
+					menu_page: Number(pageNum),
+					menu_row: position.row,
+					menu_column: position.column
 				});
 
 				console.log('메뉴 추가에 성공했습니다. ', response.data);
@@ -231,13 +191,10 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 						position.menu_category_id === newSelectedCategory && position.menu_page === 1
 					));
 
-					console.log('새로 선택된 카테고리', newSelectedCategory);
 					setFirstShowPositions(newFirstShowPositions);
 
 					// 페이지 번호는 1로 자동 지정하기
 					setPageNum('1');
-
-					console.log('새로 필터링된 데이터 - ', newFirstShowPositions);
 
 				}}>
 					<option className='text-black py-2' key='0' value='0'>선택하세요.</option>
@@ -283,7 +240,7 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 				<div className='flex flex-wrap w-full justify-start space-x-2 py-2'>
 					{Object.keys(colorVarients).map((key, index) => (
 						key !== 'transparent' &&
-						<button key={index} className={`px-3 py-2 text-black rounded-2xl ${key === 'white' ? 'border border-zinc-300' : 'border-2'} border-transparent font-medium m-1 colorTheme ${colorVarients[key]}`} style={{ flex: '0 0 calc(20% - 0.5rem)' }} value={`${key}`} onClick={(e) => clickBlockTheme(e, key)}>가</button>
+						<button key={index} className={`px-3 py-2 text-black rounded-2xl ${key === selectedBlockTheme ? 'border-black border-2' : key === 'white' ? 'border border-zinc-300' : 'border-2 border-transparent'} font-medium m-1 colorTheme ${colorVarients[key]}`} style={{ flex: '0 0 calc(20% - 0.5rem)' }} value={`${key}`} onClick={() => clickBlockTheme(key)}>가</button>
 					))}
 				</div>
 			</div>
@@ -306,9 +263,11 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 								position.menu_column === menuColumn
 							);
 
+							const selectedPosition = (position.row === menuRow && position.column === menuColumn);
+
 							return (
-								<button key={index} className={`rounded-3xl border-2 border-neutral-300 m-1 positionBtn`} onClick={(e) => clickPositionBtn(e, menuRow, menuColumn)} style={{ flex: '0 0 calc(14% - 0.5rem)', gridRowStart: menuRow, gridColumnStart: menuColumn }} disabled={!!matchingPosition}>
-									{matchingPosition ? <FontAwesomeIcon icon={faXmark} className='text-rose-600' /> : 'N'}
+								<button key={index} className={`rounded-3xl border-2 ${selectedPosition ? 'border-black' : 'border-neutral-300'}  m-1`} onClick={() => clickPositionBtn(menuRow, menuColumn)} style={{ flex: '0 0 calc(14% - 0.5rem)', gridRowStart: menuRow, gridColumnStart: menuColumn }} disabled={!!matchingPosition}>
+									{matchingPosition ? <FontAwesomeIcon icon={faXmark} className='text-red-500' /> : 'N'}
 								</button>
 							)
 						})}
