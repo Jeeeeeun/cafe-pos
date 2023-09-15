@@ -130,8 +130,6 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 		// 페이지 번호는 입력한 숫자로 바꿔줘 
 		setPageNum(e.currentTarget.value);
 
-		// 보여줄 블록 위치는 특정 카테고리의 바뀐 페이지 데이터다!
-		dispatch(showFilledPositions(otherPagePositions));
 	}
 
 
@@ -225,7 +223,7 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 			</div>
 			<div className='flex flex-row px-8 my-1 items-center'>
 				<label htmlFor='category' className='w-1/3 text-black font-bold py-2'>카테고리</label>
-				<select name='' id='category' className='w-1/2 border rounded-full py-2' required value={selectedCategory} onChange={(e) => {
+				<select name='' id='category' className='w-1/2 border rounded-full py-2 text-black' required value={selectedCategory} onChange={(e) => {
 					newSelectedCategory = Number(e.target.value);
 					setSelectedCategory(newSelectedCategory);
 
@@ -239,16 +237,13 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 					// 페이지 번호는 1로 자동 지정하기
 					setPageNum('1');
 
-					// 처음 보여줄 블록 위치는 filtering한 특정 카테고리의 1페이지 데이터다!
-					dispatch(showFilledPositions(newFirstShowPositions));
-
 					console.log('새로 필터링된 데이터 - ', newFirstShowPositions);
 
 				}}>
 					<option className='text-black py-2' key='0' value='0'>선택하세요.</option>
 					{menuCategories?.map((menuCategory) => (
 						menuCategory.menu_category_id !== 1 &&
-						<option key={menuCategory.menu_category_id} value={menuCategory.menu_category_id} className='text-black rounded-full py-2'>{menuCategory.menu_category_name}</option>
+						<option key={menuCategory.menu_category_id} value={menuCategory.menu_category_id} className='text-black rounded-full py-2' >{menuCategory.menu_category_name}</option>
 					))}
 				</select>
 			</div>
@@ -305,12 +300,11 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 							const menuColumn = Math.floor(index % 7) + 1;
 
 							const matchingPosition = firstShowPositionsState.find(position =>
-								position.menu_category_id === newSelectedCategory &&
+								position.menu_category_id === selectedCategory &&
 								position.menu_page === Number(pageNum) &&
 								position.menu_row === menuRow &&
 								position.menu_column === menuColumn
 							);
-
 
 							return (
 								<button key={index} className={`rounded-3xl border-2 border-neutral-300 m-1 positionBtn`} onClick={(e) => clickPositionBtn(e, menuRow, menuColumn)} style={{ flex: '0 0 calc(14% - 0.5rem)', gridRowStart: menuRow, gridColumnStart: menuColumn }} disabled={!!matchingPosition}>
