@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
 import { RootState } from '@/store/store';
 import { colorVarients } from '@/utils/colorVarient';
 import { showFilledPositions } from '@/store/slices/menuEditorSlice';
 import MenuOrderForm from '@/components/MenuOrderForm'
 import { Menus } from '@/types/menusType';
+import { menuLists, allMenusWithOptions } from '@/pages/api/menuApi'
 
 interface MenuBlockProps {
 	currentMenuPage: number;
@@ -47,15 +47,15 @@ const MenuBlock = ({ currentMenuPage, setCurrentMenuPage, setMaxPage }: MenuBloc
 	}
 
 	useEffect(() => {
-		const menuLists = async () => {
+		(async () => {
 			try {
 
-				let response = await axios.get("http://localhost:8080/api/showAllMenus");
-				setMenus(response.data);
+				const menuData = await menuLists();
+				setMenus(menuData);
 
-				dispatch(showFilledPositions(response.data));
+				dispatch(showFilledPositions(menuData));
 
-				const maxPageByCategory = response.data.reduce((max: number, menu: Menus) => {
+				const maxPageByCategory = menuData.reduce((max: number, menu: Menus) => {
 					return (menu.menu_category_id === currentCategoryId && menu.menu_page > max)
 						? menu.menu_page :
 						max
@@ -63,14 +63,14 @@ const MenuBlock = ({ currentMenuPage, setCurrentMenuPage, setMaxPage }: MenuBloc
 
 				setMaxPage(maxPageByCategory);
 
+				console.log("데이터 가져오기 성공? - ", allMenusWithOptions());
+
 			} catch (e) {
 
 				console.error("메뉴 목록을 가져오는 데 실패했습니다.");
 
 			}
-		}
-
-		menuLists();
+		})();
 
 	}, [currentCategoryId]);
 
