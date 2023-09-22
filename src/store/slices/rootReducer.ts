@@ -5,6 +5,7 @@ import { combineReducers } from "@reduxjs/toolkit";
 // { currentCategory }: 특정 카테고리가 선택되었음을 나타내는 액션을 dispatch하는 함수.
 import currentCategoryReducer from "./currentCategorySlice";
 import menuEditorReducer  from "./menuEditorSlice";
+import menuOrderFormReducer from "./menuOrderFormSlice";
 
 // 모든 리듀서를 합쳐 하나의 root reducer를 만듦.
 const rootReducer = combineReducers({
@@ -13,6 +14,7 @@ const rootReducer = combineReducers({
 	// 접근 시 state.currentCategory의 형태로 쓸 수 있음.
 	currentCategory: currentCategoryReducer,
 	menuEditor: menuEditorReducer,
+	menuOrderForm: menuOrderFormReducer,
 });
 
 // rootReducer를 기본적으로 내보냄.

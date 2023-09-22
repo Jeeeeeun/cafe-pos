@@ -1,3 +1,5 @@
+import { Options, OptionCategories } from '@/types/optionsType';
+
 export interface Menus {
 	menu_id: number;
 	menu_category_id: number;
@@ -8,4 +10,10 @@ export interface Menus {
 	menu_page: number;
 	menu_row: number;
 	menu_column: number;
+}
+
+export interface MenuOptions {
+	[menu_id: number]: {
+        [option_category_id: number]: Options[];
+    };
 }

@@ -3,8 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { colorVarients } from '@/utils/colorVarient';
 import { showFilledPositions } from '@/store/slices/menuEditorSlice';
+import { AllMenusWithOptions } from '@/store/slices/menuOrderFormSlice';
 import MenuOrderForm from '@/components/MenuOrderForm'
-import { Menus } from '@/types/menusType';
+import { Menus, MenuOptions } from '@/types/menusType';
 import { menuLists, allMenusWithOptions } from '@/pages/api/menuApi'
 
 interface MenuBlockProps {
@@ -34,6 +35,7 @@ const MenuBlock = ({ currentMenuPage, setCurrentMenuPage, setMaxPage }: MenuBloc
 	const dispatch = useDispatch();
 
 	const [menus, setMenus] = useState<Menus[]>([]);
+	const [menuOption, setMenuOption] = useState<MenuOptions>();
 	const [menuOrderWindow, setMenuOrderWindow] = useState(false);
 	const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
 
@@ -55,6 +57,11 @@ const MenuBlock = ({ currentMenuPage, setCurrentMenuPage, setMaxPage }: MenuBloc
 
 				dispatch(showFilledPositions(menuData));
 
+				const menuWithOptions = await allMenusWithOptions();
+				setMenuOption(menuWithOptions);
+
+				dispatch(AllMenusWithOptions(menuWithOptions));
+
 				const maxPageByCategory = menuData.reduce((max: number, menu: Menus) => {
 					return (menu.menu_category_id === currentCategoryId && menu.menu_page > max)
 						? menu.menu_page :
@@ -62,8 +69,6 @@ const MenuBlock = ({ currentMenuPage, setCurrentMenuPage, setMaxPage }: MenuBloc
 				}, 1);
 
 				setMaxPage(maxPageByCategory);
-
-				console.log("데이터 가져오기 성공? - ", allMenusWithOptions());
 
 			} catch (e) {
 
@@ -76,7 +81,7 @@ const MenuBlock = ({ currentMenuPage, setCurrentMenuPage, setMaxPage }: MenuBloc
 
 	return (
 		<>
-			{menuOrderWindow && <MenuOrderForm setMenuOrderWindow={setMenuOrderWindow} menuId={selectedMenuId} menus={menus} />}
+			{menuOrderWindow && menuOption && <MenuOrderForm setMenuOrderWindow={setMenuOrderWindow} menuId={selectedMenuId} menus={menus} menuOption={menuOption} />}
 			{gridCells.map((_, index) => {
 				const menu = filteredMenus[index];
 
