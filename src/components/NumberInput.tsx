@@ -1,23 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface numericProp {
-	defaultValue: number;
+	value: number;
+	onChange: React.Dispatch<React.SetStateAction<number>>
 }
 
-const NumberInput: React.FC<numericProp> = ({ defaultValue }) => {
+const NumberInput: React.FC<numericProp> = ({ value, onChange }) => {
 
 
-	const [value, setValue] = useState(defaultValue);
+	const [quantity, setQuantity] = useState<number>(1);
+
+	useEffect(() => {
+		setQuantity(value);
+	}, [value])
 
 	const up = () => {
-		setValue(value + 1);
+		setQuantity(quantity + 1);
+		onChange(quantity + 1);
 	}
 
 	const down = () => {
-		if (value - 1 > 0) {
-			setValue(value - 1);
+		if (quantity - 1 > 0) {
+			setQuantity(quantity - 1);
+			onChange(quantity - 1);
 		}
 	}
 
@@ -27,8 +34,9 @@ const NumberInput: React.FC<numericProp> = ({ defaultValue }) => {
 				<button className='w-1/5 border border-neutral-500 bg-white rounded-l-md py-1' onClick={down}>
 					<FontAwesomeIcon icon={faMinus} />
 				</button>
-				<input type="number" className='w-1/3 border border-neutral-500 p-1 text-center' value={value} onChange={(e) => {
-					setValue(Number(e.target.value));
+				<input type="number" className='w-1/3 border border-neutral-500 p-1 text-center' value={quantity} onChange={(e) => {
+					setQuantity(Number(e.target.value));
+					onChange(Number(e.target.value));
 				}} />
 				<button className='w-1/5 border border-neutral-500 bg-white rounded-r-md py-1' onClick={up}>
 					<FontAwesomeIcon icon={faPlus} />

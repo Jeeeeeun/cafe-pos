@@ -177,7 +177,7 @@ const MenuEditorForm: React.FC<MenuEditorFormProps & { type?: 'create' | 'edit' 
 
 
 	return (
-		<div className={`flex flex-col bg-white text-blac rounded-2xl w-2/5 ${type === 'create' ? 'h-5/6' : 'h-11/12'}  px-7 py-5 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 select-none`}>
+		<div className={`flex flex-col bg-white text-blac rounded-2xl w-2/5 ${type === 'create' ? 'h-5/6' : 'h-11/12'}  px-7 py-5 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 select-none shadow-lg`}>
 			<div className='w-full text-right'>
 				<FontAwesomeIcon icon={faXmark} className='text-black text-2xl' onClick={() => setMenuEditorForm(false)} />
 			</div>
