@@ -12,6 +12,7 @@ export interface Options {
 
 export interface OrderOptions {
 	option_id: number;
+	option_category_name: string;
 	option_name: string;
 	option_quantity: number;
 	option_price: number;

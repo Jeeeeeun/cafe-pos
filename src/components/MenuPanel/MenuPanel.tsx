@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faChevronLeft, faChevronRight, faChevronUp, faChevronDown, faTrashCan, faBookmark, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faChevronLeft, faChevronRight, faChevronUp, faChevronDown, faArrowRotateLeft, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import NavBar from '@/components/NavBar/NavBar';
+import SlideMenu from '@/components/SlideMenu';
 import Category from '@/components/MenuPanel/Category';
 import MenuBlock from '@/components/MenuPanel/MenuBlock';
 import MenuEditorForm from '@/components/MenuEditorForm';
@@ -15,7 +16,11 @@ const MenuPanel = () => {
 	const orderLists = useSelector((state: RootState) => state.menuOrderForm.addToOrderLists);
 	const dispatch = useDispatch();
 
-	const [menuEditorWindow, setMenuEditorWindow] = useState(false);
+	const [slideMenuBar, setSlideMenuBar] = useState<boolean>(false);
+	const toggleSlideMenu = () => {
+		setSlideMenuBar(!slideMenuBar);
+	}
+
 	const [currentMenuPage, setCurrentMenuPage] = useState<number>(1);
 	const [maxPage, setMaxPage] = useState<number>(1);
 
@@ -39,11 +44,11 @@ const MenuPanel = () => {
 
 	return (
 		<>
-			{menuEditorWindow && <MenuEditorForm setMenuEditorForm={setMenuEditorWindow} />}
+			{slideMenuBar && <SlideMenu toggleSlideMenu={toggleSlideMenu} />}
 
 			<div className='w-full h-full grid grid-cols-10 grid-rows-10 z-20'>
 				<div className='w-full col-span-10 row-span-1'>
-					<NavBar />
+					<NavBar toggleSlideMenu={toggleSlideMenu} />
 				</div>
 				<div className='w-full col-span-7 grid grid-rows-10 row-span-9 bg-zinc-200 text-black'>
 					<div className='w-full h-full row-span-1'>
@@ -60,35 +65,25 @@ const MenuPanel = () => {
 							<FontAwesomeIcon icon={faChevronRight} />
 						</button>}
 					</div>
-					<div className='w-full row-span-1 flex flex-row justify-between m-2 p-2'>
-						<button className='pl-3'>
-							<FontAwesomeIcon icon={faPen} />
+					<div className='w-full row-span-1 flex flex-row justify-between'>
+						<button className='w-1/3 flex justify-start items-center'>
+							<FontAwesomeIcon icon={faPen} className='ml-5' />
 							<span className='ml-2'>메뉴블록 순서바꾸기</span>
 						</button>
-						<span className='flex items-center'>paging</span>
-						<button className='pr-12 text-center'>
-							<FontAwesomeIcon icon={faPlus} onClick={() => setMenuEditorWindow(true)} />
-						</button>
+						<span className='flex items-center w-1/3 justify-center'>paging</span>
+						<span className='w-1/3 justify-center'></span>
 					</div>
 				</div>
 				<div className='col-span-3 bg-white text-black'>
-					<div className='flex flex-row justify-between px-5 py-2 items-center'>
+					<div className='flex flex-row justify-between px-8 py-2 items-center font-semibold'>
 						<span>{menuCount}건</span>
-						<span>
-							<button className='rounded-l-lg px-4 py-2 border-2 bg-white border-stone-300'>
-								<FontAwesomeIcon icon={faChevronUp} />
-							</button>
-							<button className='rounded-r-lg px-4 py-2 border-2 bg-white border-stone-300'>
-								<FontAwesomeIcon icon={faChevronDown} />
-							</button>
-						</span>
+
+						<button className='px-3 py-1'>
+							<FontAwesomeIcon icon={faArrowRotateLeft} />
+						</button>
+
 					</div>
-					<div className='flex flex-col'>
-						<div className='flex justify-between px-5 py-3 bg-blue-100'>
-							<button className='bg-white rounded-md px-3 py-1'>삭제</button>
-						</div>
-					</div>
-					<div className='flex flex-col overflow-auto max-h-[70vh]'>
+					<div className='h-[70vh] flex flex-col overflow-auto max-h-[70vh]'>
 						{orderLists.map((order, index) => (
 							<div key={index} className=''>
 								<hr className='border' />
@@ -98,7 +93,7 @@ const MenuPanel = () => {
 										<span className='mx-5'>
 											<img className='w-5 rotate-[-20deg]' src='voucher.png' />
 										</span>
-										<FontAwesomeIcon icon={faTrashCan} onClick={() => {dispatch(RemoveFromOrderLists(index))}}/>
+										<FontAwesomeIcon icon={faTrashCan} onClick={() => { dispatch(RemoveFromOrderLists(index)) }} />
 									</div>
 									<h5 className='flex flex-row justify-between text-lg font-semibold'>
 										<span>{order.menu_name} &times; {order.menu_quantity}</span>

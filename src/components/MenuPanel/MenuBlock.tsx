@@ -72,7 +72,7 @@ const MenuBlock = ({ currentMenuPage, setCurrentMenuPage, setMaxPage }: MenuBloc
 
 			} catch (e) {
 
-				console.error("메뉴 목록을 가져오는 데 실패했습니다.");
+				console.error('메뉴 목록을 가져오는 데 실패했습니다.');
 
 			}
 		})();
@@ -95,8 +95,8 @@ const MenuBlock = ({ currentMenuPage, setCurrentMenuPage, setMaxPage }: MenuBloc
 							}}>
 							<div className='w-full flex justify-end px-1'>
 								{menu.menu_isFavorite === 'F' ?
-									<img src="/star-regular.svg" alt="empty star" className={'w-5'} /> :
-									<img src="/star-solid.svg" alt="full star" className={'w-5'} />
+									<img src='/star-regular.svg' alt='empty star' className={'w-5'} /> :
+									<img src='/star-solid.svg' alt='full star' className={'w-5'} />
 								}
 							</div>
 							<div className='px-1'>{menu.menu_name}</div>
@@ -105,7 +105,7 @@ const MenuBlock = ({ currentMenuPage, setCurrentMenuPage, setMaxPage }: MenuBloc
 					);
 
 				} else {
-					return <div key={`empty-${index}`} className="w-full h-full rounded-lg p-2 select-none">
+					return <div key={`empty-${index}`} className='w-full h-full rounded-lg p-2 select-none'>
 						<div>&nbsp;</div>
 						<div>&nbsp;</div>
 						<div>&nbsp;</div>

@@ -22,9 +22,12 @@ const MenuOrderForm: React.FC<MenuOrderFormProps> = ({ setMenuOrderWindow, menuI
 	// 선택한 옵션들 관리
 	const [selectedOptions, setSelectedOptions] = useState<OrderOptions[]>([]);
 
+	// 온도 옵션 관리
+	const [selectedTemperature, setSelectedTemperature] = useState<string>('');
+
 	// 음료 수량 관리
 	const [quantity, setQuantity] = useState<number>(1);
-	
+
 	// 옵션 가격 포함한 음료 가격
 	const totalPrice = quantity * (Object.values(selectedOptions).reduce((total, option) => {
 
@@ -82,128 +85,154 @@ const MenuOrderForm: React.FC<MenuOrderFormProps> = ({ setMenuOrderWindow, menuI
 
 	return (
 		<>
-			<div className={`flex flex-col bg-white text-blac rounded-2xl w-2/5 'h-5/6' px-7 py-5 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 select-none shadow-lg`}>
+			<div className={`flex flex-col bg-white text-blac rounded-2xl w-2/5 'h-5/6' px-7 py-5 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 select-none shadow-lg`} style={{ maxHeight: '83vh' }}>
 				<div className='w-full text-right'>
 					<FontAwesomeIcon icon={faXmark} className='text-black text-2xl' onClick={() => setMenuOrderWindow(false)} />
 				</div>
 				{selectedMenuItem
 					&&
-					<>
+					<div className='overflow-auto max-h-[60%]'>
 						<div className='flex flex-row justify-around'>
 							<div className='font-bold text-xl'>
 								{selectedMenuItem.menu_name}
 							</div>
-							<NumberInput value={quantity} onChange={setQuantity}/>
+							<NumberInput value={quantity} onChange={setQuantity} />
 						</div>
 						<div className='text-right mr-5 my-3 text-xl'>{totalPrice.toLocaleString()}원</div>
-						{Object.entries(allOptionsOfTheMenu).map(([optionCategoryIdString, options]) => {
-							const optionCategoryId = parseInt(optionCategoryIdString);
+						<div className=''> 
+							{Object.entries(allOptionsOfTheMenu).map(([optionCategoryIdString, options]) => {
+								const optionCategoryId = parseInt(optionCategoryIdString);
 
-							const uniqueOptionCategoryNames = [...new Set(options.map(option => option.option_category_name))];
+								const uniqueOptionCategoryNames = [...new Set(options.map(option => option.option_category_name))];
 
-							return (
-								<div key={optionCategoryId} className='flex flex-col text-black overflow-auto'>
-									{uniqueOptionCategoryNames.map((optionCategoryName, optionCategoryId) => (
-										<div key={optionCategoryId} className='font-bold'>{optionCategoryName}</div>
-									))}
-									<div className='flex flex-row'>
-										{options.map((option) => {
+								return (
 
-											const selectedOption = selectedOptions[option.option_id];
-											const clickCount = selectedOption ? selectedOption.option_quantity : 0;
-											const isClicked = clickCount > 0;
+									<div key={optionCategoryId} className='flex flex-col text-black'>
+										{uniqueOptionCategoryNames
+											.filter(optionCategoryName => !(optionCategoryName === '얼음' && selectedTemperature !== 'ICED'))
+											.map((optionCategoryName, optionCategoryId) => (
+												<div key={optionCategoryId} className='font-bold'>{optionCategoryName}</div>
+											))}
+										<div className='flex flex-row'>
+											{options.map((option) => {
 
-											const btnStyle = option.option_name.includes('HOT')
-												? isClicked ? 'bg-rose-500 text-white' : 'ring-rose-500 text-rose-500'
-												: option.option_name.includes('ICED')
-													? isClicked ? 'bg-sky-500 text-white' : 'ring-sky-500 text-sky-500'
-													: isClicked ? 'bg-neutral-700 text-white' : 'ring-neutral-700 text-neutral-700';
+												const selectedOption = selectedOptions[option.option_id];
+												const clickCount = selectedOption ? selectedOption.option_quantity : 0;
+												const isClicked = clickCount > 0;
 
-											return (
-												<button
-													key={option.option_id}
-													value={option.option_price}
-													onClick={() => {
-														if (option.option_name === '1샷 추가') {
-															setSelectedOptions(prevState => {
-																const newState = { ...prevState };
-																
-																for (const id in newState) {
-																	if (newState[id].option_name === '연하게') {
-																		delete newState[id];
+												const btnStyle = option.option_name.includes('HOT')
+													? (selectedTemperature === 'HOT') ? 'bg-rose-500 text-white' : 'ring-rose-500 text-rose-500'
+													: option.option_name.includes('ICED')
+														? (selectedTemperature === 'ICED') ? 'bg-sky-500 text-white' : 'ring-sky-500 text-sky-500'
+														: isClicked ? 'bg-neutral-700 text-white' : 'ring-neutral-700 text-neutral-700';
+
+
+												if (option.option_category_name === '얼음' && selectedTemperature !== 'ICED') {
+													return null;
+												}
+
+												return (
+													<button
+														key={option.option_id}
+														value={option.option_price}
+														onClick={() => {
+															if (option.option_category_name === '온도') {
+																if (option.option_name.includes('ICED')) {
+																	setSelectedTemperature('ICED');
+																} else if (option.option_name.includes('HOT')) {
+																	setSelectedTemperature('HOT');
+																}
+															} else if (option.option_name === '1샷 추가') {
+																setSelectedOptions(prevState => {
+																	const newState = { ...prevState };
+
+																	for (const id in newState) {
+																		if (newState[id].option_name === '연하게') {
+																			delete newState[id];
+																		}
 																	}
-																}
 
-																if (newState[option.option_id]) {
-																	newState[option.option_id].option_quantity = clickCount + 1;
-																} else {
-																	newState[option.option_id] = {
-																		option_id: option.option_id,
-																		option_name: option.option_name,
-																		option_price: option.option_price,
-																		option_quantity: 1
-																	};
-																}
-
-																return newState;
-															});
-														} else if (option.option_name === "연하게") {
-															setSelectedOptions(prevState => {
-																const newState = { ...prevState };
-																
-																for (const id in newState) {
-																	if (newState[id].option_name === '1샷 추가') {
-																		delete newState[id];
+																	if (newState[option.option_id]) {
+																		newState[option.option_id].option_quantity = clickCount + 1;
+																	} else {
+																		newState[option.option_id] = {
+																			option_id: option.option_id,
+																			option_category_name: option.option_category_name,
+																			option_name: option.option_name,
+																			option_price: option.option_price,
+																			option_quantity: 1
+																		};
 																	}
-																}
 
-																if (newState[option.option_id]) {
-																	newState[option.option_id].option_quantity = clickCount + 1;
-																} else {
-																	newState[option.option_id] = {
-																		option_id: option.option_id,
-																		option_name: option.option_name,
-																		option_price: option.option_price,
-																		option_quantity: 1
-																	};
-																}
+																	return newState;
+																});
+															} else if (option.option_name === '연하게') {
+																setSelectedOptions(prevState => {
+																	const newState = { ...prevState };
 
-																return newState;
-															});
-														} else {
-															setSelectedOptions(prevState => {
-																const newState = { ...prevState };
-																
-																if (newState[option.option_id]) {
-																	newState[option.option_id].option_quantity = clickCount + 1;
-																} else {
-																	newState[option.option_id] = {
-																		option_id: option.option_id,
-																		option_name: option.option_name,
-																		option_price: option.option_price,
-																		option_quantity: 1
-																	};
-																}
-																
-																return newState;
-															});
-														}
-													}}
-													className={`ring-1 px-3 py-2 m-2 border rounded-xl font-medium ${btnStyle}`}
-												>
-													{`${option.option_name}${(clickCount && option.option_name === "1샷 추가") ? `(${clickCount})` : ""}`}
-												</button>
-											)
-										})}
+																	for (const id in newState) {
+																		if (newState[id].option_name === '1샷 추가') {
+																			delete newState[id];
+																		}
+																	}
+
+																	if (newState[option.option_id]) {
+																		newState[option.option_id].option_quantity = clickCount + 1;
+																	} else {
+																		newState[option.option_id] = {
+																			option_id: option.option_id,
+																			option_category_name: option.option_category_name,
+																			option_name: option.option_name,
+																			option_price: option.option_price,
+																			option_quantity: 1
+																		};
+																	}
+
+																	return newState;
+																});
+															} else {
+																setSelectedOptions(prevState => {
+																	const newState = { ...prevState };
+
+																	// 같은 카테고리의 다른 옵션들 초기화
+																	for (const id in newState) {
+																		if (newState[id].option_category_name === option.option_category_name && Number(id) !== option.option_id) {
+																			delete newState[id];
+																		}
+																	}
+
+																	if (newState[option.option_id]) {
+																		newState[option.option_id].option_quantity = clickCount + 1;
+																	} else {
+																		newState[option.option_id] = {
+																			option_id: option.option_id,
+																			option_category_name: option.option_category_name,
+																			option_name: option.option_name,
+																			option_price: option.option_price,
+																			option_quantity: 1
+																		};
+																	}
+
+																	return newState;
+																});
+															}
+														}}
+														className={`ring-1 px-3 py-2 m-2 border rounded-xl font-medium ${btnStyle}`}
+													>
+														{`${option.option_name}${(clickCount && option.option_name === '1샷 추가') ? `(${clickCount})` : ''}`}
+													</button>
+												)
+											})}
+										</div>
 									</div>
-								</div>
-							)
-						})}
+								)
+							})}
+						</div>
 						<div className='flex justify-center'>
 							<button className='p-3 ml-1.5 text-black border rounded-2xl' onClick={resetBtnClicked}>초기화</button>
 							<button className='p-3 ml-1.5 text-black border rounded-2xl' onClick={addToOrderList}>주문 목록에 추가</button>
 						</div>
-					</>
+					</div>
 				}
 			</div>
 		</>
