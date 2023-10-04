@@ -5,7 +5,6 @@ import NavBar from '@/components/NavBar/NavBar';
 import SlideMenu from '@/components/SlideMenu';
 import Category from '@/components/MenuPanel/Category';
 import MenuBlock from '@/components/MenuPanel/MenuBlock';
-import MenuEditorForm from '@/components/MenuEditorForm';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { RemoveFromOrderLists } from '@/store/slices/menuOrderFormSlice';
@@ -34,6 +33,11 @@ const MenuPanel = () => {
 		if (currentMenuPage < maxPage) {
 			setCurrentMenuPage(currentMenuPage + 1);
 		}
+	}
+
+	const resetAllSelectedMenus = () => {
+		// 선택했던 메뉴 초기화 함수
+		// redux slice 추가로 만들어서 구현 예정
 	}
 
 	// 주문할 메뉴 개수 총합
@@ -79,7 +83,7 @@ const MenuPanel = () => {
 						<span>{menuCount}건</span>
 
 						<button className='px-3 py-1'>
-							<FontAwesomeIcon icon={faArrowRotateLeft} />
+							<FontAwesomeIcon icon={faArrowRotateLeft} onClick={resetAllSelectedMenus}/>
 						</button>
 
 					</div>

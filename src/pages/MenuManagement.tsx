@@ -22,9 +22,10 @@ interface MenuData {
 	menu_column: number;
 }
 
-const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' }> = ({ type = 'edit' }) => {
+const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' }> = ({ type: initialType = 'edit' }) => {
 
 	const [slideMenuBar, setSlideMenuBar] = useState<boolean>(false);
+
 	const toggleSlideMenu = () => {
 		setSlideMenuBar(!slideMenuBar);
 	}
@@ -37,6 +38,17 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 
 	// 메뉴 목록
 	const [menu, setMenu] = useState<AllMenuInfos[]>([]);
+
+
+	// form type 관리
+	const [formType, setFormType] = useState<'create' | 'edit'>(initialType);
+
+	// + 버튼 누르면 form type이 edit -> create로 바뀌게 만듦
+	const changeFormRole = () => {
+		if (initialType === 'edit') {
+			setFormType('create');
+		}
+	}
 
 	// 선택된 카테고리 값 지정
 	const [selectedCategory, setSelectedCategory] = useState<number>(0);
@@ -74,9 +86,8 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 	// 새로 선택하는 카테고리 번호 선언(초기화)
 	let newSelectedCategory: number;
 
-	// 초기화 버튼 눌렀을 때
-	const clickResetBtn = (e: React.MouseEvent<HTMLButtonElement>) => {
-
+	// 입력 폼 완전히 비우기
+	const clearForm = () => {
 		// 카테고리 선택 초기화
 		setSelectedCategory(0);
 
@@ -96,6 +107,11 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 		setPosition({ row: 0, column: 0 });
 	}
 
+	// 초기화 버튼 눌렀을 때
+	const clickResetBtn = (e: React.MouseEvent<HTMLButtonElement>) => {
+		clearForm();
+	}
+
 	const dispatch = useDispatch();
 
 	// 다른 페이지 남은 메뉴 블록 위치 보려고 할 때
@@ -108,6 +124,9 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 
 	const menuBlocks = Array.from({ length: 35 });
 
+	// 이름 중복 확인 메시지
+	const msgBox = document.querySelector('#duplicateMsg') as HTMLDivElement;
+
 	// 메뉴 이름 중복 검사
 	const checkSameName = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
@@ -119,8 +138,6 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 			const response = await axios.post('http://localhost:8080/api/checkSameMenuName', {
 				menu_name: trimmedName
 			});
-
-			const msgBox = document.querySelector('#duplicateMsg') as HTMLDivElement;
 
 			if (trimmedName === '') {
 				msgBox.textContent = '메뉴 이름이 입력되지 않았습니다.';
@@ -148,7 +165,7 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 	const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
 
-		if (type === 'create') {
+		if (formType === 'create') {
 			try {
 
 				// 이름 중복 여부 검사
@@ -168,16 +185,25 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 					menu_column: position.column
 				});
 
-				console.log('메뉴 추가에 성공했습니다. ', response.data);
-
+				// 사용자에게 등록 완료 알림 보여주기
+				alert('메뉴를 등록 완료하였습니다.');
 
 				// 추가 데이터 redux에 포함하기
 				dispatch(allMenuLists(response.data));
 
+				// 추가하고는 채워진 폼 비워야지
+				clearForm();
+
+				// form type은 다시 기본인 edit으로 바꾸자
+				setFormType('edit');
+
+				// 이름 중복확인 msgBox도 초기화
+				msgBox.textContent = '';
+
 			} catch (e) {
 				console.error('메뉴 추가에 오류가 발생했습니다: ', e);
 			}
-		} else if (type === 'edit') {
+		} else if (formType === 'edit') {
 
 		}
 
@@ -204,7 +230,9 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 					<NavBar toggleSlideMenu={toggleSlideMenu} />
 				</div>
 				<div className='bg-zinc-200 text-black row-span-1 py-3 pr-8 text-right select-none'>
-					<FontAwesomeIcon icon={faPlus} />
+					<button className='bg-transparent' onClick={changeFormRole}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
 				</div>
 				<div className='grid grid-cols-2 row-span-7 select-none'>
 					<div className='col-span-1 h-full bg-zinc-200 text-black flex justify-center'>
@@ -289,7 +317,7 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 									<input type='number' id='price' value={menuPrice} onChange={(e) => setMenuPrice(Number(e.target.value))} className='w-1/2 border text-black rounded-full py-2 text-right pr-3' required />
 									<span className='text-black py-2 ml-5'>원</span>
 								</div>
-								{type === 'edit' ?
+								{formType === 'edit' ?
 									<div className='flex flex-row px-8 my-1'>
 										<label htmlFor='' className='w-1/3 text-black font-bold py-2' >즐겨찾기</label>
 										<div className='w-1/2 flex text-black justify-between items-center'>
@@ -346,9 +374,9 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 								</div>
 							</div>
 							<div className='flex flex-row justify-center mt-2'>
-								{type === 'create' ? <button className='p-3 mr-1.5 text-black border rounded-2xl' onClick={clickResetBtn}>초기화</button> : ''}
+								{formType === 'create' ? <button className='p-3 mr-1.5 text-black border rounded-2xl' onClick={clickResetBtn}>초기화</button> : ''}
 								<button className='p-3 ml-1.5 text-black border rounded-2xl' onClick={handleSubmit}>
-									{type === 'create' ? '등록하기' : '수정하기'}
+									{formType === 'create' ? '등록하기' : '수정하기'}
 								</button>
 							</div>
 						</div>
