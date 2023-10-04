@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { RootState } from '@/store/store';
-import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faPenToSquare, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SlideMenu from '@/components/SlideMenu';
 import NavBar from '@/components/NavBar/NavBar';
@@ -24,6 +24,7 @@ interface MenuData {
 
 const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' }> = ({ type: initialType = 'edit' }) => {
 
+	// 슬라이드 메뉴 보여줄까 말까 toggle 관리
 	const [slideMenuBar, setSlideMenuBar] = useState<boolean>(false);
 
 	const toggleSlideMenu = () => {
@@ -39,14 +40,68 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 	// 메뉴 목록
 	const [menu, setMenu] = useState<AllMenuInfos[]>([]);
 
-
 	// form type 관리
 	const [formType, setFormType] = useState<'create' | 'edit'>(initialType);
+
+	// menuEditorForm 부분의 요소들 disabled 여부 관리
+	const [disabledElement, setDisabledElement] = useState<boolean | undefined>(true);
 
 	// + 버튼 누르면 form type이 edit -> create로 바뀌게 만듦
 	const changeFormRole = () => {
 		if (initialType === 'edit') {
+
+			// form은 이제부터 insert를 위한 form이야.
 			setFormType('create');
+
+			// 기본적으로 disabled 해두었던 모든 form 요소들의 disabled를 undefined로 바꿔서 disabled 속성을 없애고 활성화시켜줘.
+			setDisabledElement(undefined);
+		}
+	}
+
+	// 상세정보 조회할 메뉴 선택된 게 있는지 관리
+	const [clickedData, setClickedData] = useState<AllMenuInfos | null>(null);
+
+	// 해당 데이터 form에 자동 입력되게끔 하기 (왼쪽 table의 메뉴를 눌렀을 때)
+	const showDetailInfos = (item: AllMenuInfos) => {
+		
+		// 선택한 메뉴의 카테고리 이름 
+		setSelectedCategory(item.menu_category_id);
+
+		// 선택한 메뉴의 이름
+		setMenuName(item.menu_name);
+
+		// 선택한 메뉴의 가격
+		setMenuPrice(item.menu_price);
+
+		// 선택한 메뉴의 즐겨찾기 여부
+		if (item.menu_isFavorite) {
+			setFavorite(true);
+		} else if (!item.menu_isFavorite) {
+			setFavorite(false);
+		}
+
+		// 선택한 메뉴의 블록 배경색
+		setSelectedBlockTheme(item.menu_colorScheme);
+
+		// 선택한 메뉴의 페이지 번호
+		setPageNum(String(item.menu_page));
+
+		// 선택한 메뉴의 블록 위치 정보
+		setPosition({row: item.menu_row, column: item.menu_column});
+
+		// 선택된 데이터가 있음을 관리
+		setClickedData(item);
+
+	}
+
+	// 수정 form 활성화 하기
+	const activateEditInfos = () => {
+
+		if (clickedData !== null) {
+			// disabled 해제
+			setDisabledElement(undefined);
+		} else {
+			alert('수정할 데이터를 왼쪽 표에서 먼저 선택하세요.');
 		}
 	}
 
@@ -59,6 +114,9 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 
 	// 메뉴 가격
 	const [menuPrice, setMenuPrice] = useState<number>(0);
+
+	// 즐겨찾기 여부
+	const [favorite, setFavorite] = useState<boolean | null>(null);
 
 	// 빈 메뉴 블록 위치 보여줄 페이지 번호 초기값 지정
 	const [pageNum, setPageNum] = useState('');
@@ -88,6 +146,7 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 
 	// 입력 폼 완전히 비우기
 	const clearForm = () => {
+
 		// 카테고리 선택 초기화
 		setSelectedCategory(0);
 
@@ -125,7 +184,7 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 	const menuBlocks = Array.from({ length: 35 });
 
 	// 이름 중복 확인 메시지
-	const msgBox = document.querySelector('#duplicateMsg') as HTMLDivElement;
+	const msgBox = useRef<HTMLDivElement>(null);
 
 	// 메뉴 이름 중복 검사
 	const checkSameName = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -139,21 +198,23 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 				menu_name: trimmedName
 			});
 
-			if (trimmedName === '') {
-				msgBox.textContent = '메뉴 이름이 입력되지 않았습니다.';
-				msgBox.classList.remove('text-black', 'text-green-600');
-				msgBox.classList.add('text-red-500');
-				return true;
-			} else if (!response.data) {
-				msgBox.textContent = '이 메뉴 이름은 사용 가능합니다.';
-				msgBox.classList.remove('text-black', 'text-red-500');
-				msgBox.classList.add('text-green-600');
-				return false;
-			} else {
-				msgBox.textContent = '이미 같은 이름이 존재합니다.';
-				msgBox.classList.remove('text-black', 'text-green-600');
-				msgBox.classList.add('text-red-500');
-				return true;
+			if (msgBox.current) {
+				if (trimmedName === '') {
+					msgBox.current.textContent = '메뉴 이름이 입력되지 않았습니다.';
+					msgBox.current.classList.remove('text-black', 'text-green-600');
+					msgBox.current.classList.add('text-red-500');
+					return true;
+				} else if (!response.data) {
+					msgBox.current.textContent = '이 메뉴 이름은 사용 가능합니다.';
+					msgBox.current.classList.remove('text-black', 'text-red-500');
+					msgBox.current.classList.add('text-green-600');
+					return false;
+				} else {
+					msgBox.current.textContent = '이미 같은 이름이 존재합니다.';
+					msgBox.current.classList.remove('text-black', 'text-green-600');
+					msgBox.current.classList.add('text-red-500');
+					return true;
+				}
 			}
 
 		} catch (e) {
@@ -198,7 +259,9 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 				setFormType('edit');
 
 				// 이름 중복확인 msgBox도 초기화
-				msgBox.textContent = '';
+				if (msgBox.current) {
+					msgBox.current.textContent = '';
+				}
 
 			} catch (e) {
 				console.error('메뉴 추가에 오류가 발생했습니다: ', e);
@@ -252,10 +315,10 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 										const lastRow = index === menu.length - 1;
 
 										return (
-											<tr key={index} style={{ width: '100%' }} className='hover:bg-purple-100'>
+											<tr key={index} onClick={() => showDetailInfos(item)} style={{ width: '100%' }} className='hover:bg-purple-100'>
 												<td style={{ width: '15%' }} scope='col' className={`px-4 py-3 text-xs text-center text-gray-500 tracking-wider ${lastRow ? 'rounded-bl-2xl' : ''}`}>{item.menu_name}</td>
 												<td style={{ width: '25%' }} scope='col' className='px-4 py-3 text-xs text-center text-gray-500 tracking-wider'>{item.menu_category_name}</td>
-												<td style={{ width: '10%' }} scope='col' className='px-4 py-3 text-xs text-center text-gray-500 tracking-wider'>{item.menu_price}</td>
+												<td style={{ width: '10%' }} scope='col' className='px-4 py-3 text-xs text-center text-gray-500 tracking-wider'>{item.menu_price.toLocaleString()}</td>
 												<td style={{ width: '30%' }} scope='col' className='truncate'>
 													<div className='px-4 py-3 text-xs text-center text-gray-500 tracking-wider'>
 														{item.options?.map(option => option.option_name).join(', ')}
@@ -277,11 +340,16 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 						</div>
 					</div>
 					<div className='col-span-1 w-full grid grid-rows-10 row-span-8 justify-center bg-zinc-200 text-black'>
-						<div className='flex flex-col bg-white text-blac rounded-2xl w-5/6 h-11/12 px-7 py-5 select-none'>
+						<div className={`flex flex-col bg-white text-blac rounded-2xl w-5/6 h-11/12 px-7 py-5 select-none ${disabledElement ? 'opacity-60': ''}`}>
 							<div className='overflow-y-auto'>
+								<div className='flex justify-end items-center'>
+									<button className='bg-transparent text-xl' onClick={activateEditInfos} title='수정하려면 이 버튼을 누르세요.'>
+										<FontAwesomeIcon icon={faPenToSquare} />
+									</button>
+								</div>
 								<div className='flex flex-row px-8 my-1 items-center'>
 									<label htmlFor='category' className='w-1/3 text-black font-bold py-2'>카테고리</label>
-									<select name='' id='category' className='w-1/2 border rounded-full py-2 text-black' required value={selectedCategory} onChange={(e) => {
+									<select name='' id='category' className='w-1/2 border rounded-full py-2 text-black indent-3' required value={selectedCategory} disabled={disabledElement ? true : undefined} onChange={(e) => {
 										newSelectedCategory = Number(e.target.value);
 										setSelectedCategory(newSelectedCategory);
 
@@ -295,10 +363,10 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 										setPageNum('1');
 
 									}}>
-										<option className='text-black py-2' key='0' value='0'>선택하세요.</option>
+										<option className='text-black py-2 indent-3' key='0' value='0'>선택하세요.</option>
 										{menuCategories?.map((menuCategory) => (
 											menuCategory.menu_category_id !== 1 &&
-											<option key={menuCategory.menu_category_id} value={menuCategory.menu_category_id} className='text-black rounded-full py-2' >{menuCategory.menu_category_name}</option>
+											<option key={menuCategory.menu_category_id} value={menuCategory.menu_category_id} className='text-black rounded-full py-2 indent-3' >{menuCategory.menu_category_name}</option>
 										))}
 									</select>
 								</div>
@@ -306,15 +374,15 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 									<div className='flex flex-row px-8 my-1'>
 										<label htmlFor='menuName' className='w-1/3 text-black font-bold py-2'>이름</label>
 										<div className='flex flex-col w-1/2'>
-											<input type='text' name='' id='menuName' value={menuName} className='border text-black rounded-full indent-3 py-2' onChange={(e) => setMenuName(e.target.value)} placeholder='메뉴 이름을 입력하세요.' />
-											<div id='duplicateMsg' className='text-black indent-5 text-xs'></div>
+											<input type='text' name='' id='menuName' value={menuName} className='border text-black rounded-full indent-3 py-2' disabled={disabledElement ? true : undefined} onChange={(e) => setMenuName(e.target.value)} placeholder='메뉴 이름을 입력하세요.' />
+											<div ref={msgBox} id='duplicateMsg' className='text-black indent-5 text-xs'></div>
 										</div>
-										<button className='rounded-full border text-black text-sm ml-3 px-2 py-0.5' onClick={checkSameName}>중복확인</button>
+										<button className='rounded-full border text-black text-sm ml-3 px-2 py-0.5' disabled={disabledElement ? true : undefined} onClick={checkSameName}>중복확인</button>
 									</div>
 								</div>
 								<div className='flex flex-row px-8 my-1'>
 									<label htmlFor='price' className='w-1/3 text-black font-bold py-2 items-center'>가격</label>
-									<input type='number' id='price' value={menuPrice} onChange={(e) => setMenuPrice(Number(e.target.value))} className='w-1/2 border text-black rounded-full py-2 text-right pr-3' required />
+									<input type='number' id='price' value={menuPrice} disabled={disabledElement ? true : undefined} onChange={(e) => setMenuPrice(Number(e.target.value))} className='w-1/2 border text-black rounded-full py-2 text-right pr-3' required />
 									<span className='text-black py-2 ml-5'>원</span>
 								</div>
 								{formType === 'edit' ?
@@ -322,11 +390,11 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 										<label htmlFor='' className='w-1/3 text-black font-bold py-2' >즐겨찾기</label>
 										<div className='w-1/2 flex text-black justify-between items-center'>
 											<div className='flex items-center'>
-												<input type='radio' name='favorite' id='favoriteTrue' className='form-radio text-slate-800 border w-5 h-5' />
+												<input type='radio' name='favorite' id='favoriteTrue' onClick={() => setFavorite(true)} checked={favorite === true} disabled={disabledElement ? true : undefined} className='form-radio text-slate-800 border w-5 h-5' />
 												<span className='ml-2'>Y</span>
 											</div>
 											<div className='flex items-center'>
-												<input type='radio' name='favorite' id='favoriteFalse' className='form-radio text-slate-800 border w-5 h-5' />
+												<input type='radio' name='favorite' id='favoriteFalse' onClick={() => setFavorite(false)} checked={favorite === false} disabled={disabledElement ? true : undefined} className='form-radio text-slate-800 border w-5 h-5' />
 												<span className='ml-2'>N</span>
 											</div>
 										</div>
@@ -338,7 +406,7 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 									<div className='flex flex-wrap w-full justify-start space-x-2 py-2'>
 										{Object.keys(colorVarients).map((key, index) => (
 											key !== 'transparent' &&
-											<button key={index} className={`px-3 py-2 text-black rounded-2xl ${key === selectedBlockTheme ? 'border-black border-2' : key === 'white' ? 'border border-zinc-300' : 'border-2 border-transparent'} font-medium m-1 colorTheme ${colorVarients[key]}`} style={{ flex: '0 0 calc(20% - 0.5rem)' }} value={`${key}`} onClick={() => clickBlockTheme(key)}>가</button>
+											<button key={index} disabled={disabledElement ? true : undefined} className={`px-3 py-2 text-black rounded-2xl ${key === selectedBlockTheme ? 'border-black border-2' : key === 'white' ? 'border border-zinc-300' : 'border-2 border-transparent'} font-medium m-1 colorTheme ${colorVarients[key]}`} style={{ flex: '0 0 calc(20% - 0.5rem)' }} value={`${key}`} onClick={() => clickBlockTheme(key)}>가</button>
 										))}
 									</div>
 								</div>
@@ -346,7 +414,7 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 									<label htmlFor='' className='w-1/3 text-black font-bold py-2 flex items-center'>위치</label>
 									<div className='flex flex-col'>
 										<div className='flex justify-end my-1'>
-											<input type='number' value={pageNum} className='text-black rounded-full border text-right pr-3 py-2 w-2/3' onChange={showOtherPagePositions} />
+											<input type='number' value={pageNum} disabled={disabledElement ? true : undefined} className='text-black rounded-full border text-right pr-3 py-2 w-2/3' onChange={showOtherPagePositions} />
 											<span className='flex items-center text-black py-2 ml-5'>페이지</span>
 										</div>
 										<div className='flex flex-wrap w-full justify-start'>
@@ -364,7 +432,7 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 												const selectedPosition = (position.row === menuRow && position.column === menuColumn);
 
 												return (
-													<button key={index} className={`rounded-3xl border-2 ${selectedPosition ? 'border-black' : 'border-neutral-300'}  m-1 text-white`} onClick={() => clickPositionBtn(menuRow, menuColumn)} style={{ flex: '0 0 calc(14% - 0.5rem)', gridRowStart: menuRow, gridColumnStart: menuColumn }} disabled={!!matchingPosition}>
+													<button key={index} disabled={!!matchingPosition || disabledElement ? true : undefined} className={`rounded-3xl border-2 ${selectedPosition ? 'border-black' : 'border-neutral-300'}  m-1 text-white`} onClick={() => clickPositionBtn(menuRow, menuColumn)} style={{ flex: '0 0 calc(14% - 0.5rem)', gridRowStart: menuRow, gridColumnStart: menuColumn }}>
 														{matchingPosition ? <FontAwesomeIcon icon={faXmark} className='text-red-500' /> : 'N'}
 													</button>
 												)
@@ -375,7 +443,7 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 							</div>
 							<div className='flex flex-row justify-center mt-2'>
 								{formType === 'create' ? <button className='p-3 mr-1.5 text-black border rounded-2xl' onClick={clickResetBtn}>초기화</button> : ''}
-								<button className='p-3 ml-1.5 text-black border rounded-2xl' onClick={handleSubmit}>
+								<button disabled={disabledElement ? true : undefined} className='p-3 ml-1.5 text-black border rounded-2xl' onClick={handleSubmit}>
 									{formType === 'create' ? '등록하기' : '수정하기'}
 								</button>
 							</div>
