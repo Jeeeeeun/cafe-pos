@@ -53,6 +53,9 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 			// form은 이제부터 insert를 위한 form이야.
 			setFormType('create');
 
+			// 혹시 form에 내용 채워져있으면 그거 다 없애줘
+			clearForm();
+
 			// 기본적으로 disabled 해두었던 모든 form 요소들의 disabled를 undefined로 바꿔서 disabled 속성을 없애고 활성화시켜줘.
 			setDisabledElement(undefined);
 		}
@@ -164,6 +167,11 @@ const MenuManagement: React.FC<MenuManagementProps & { type?: 'create' | 'edit' 
 
 		// 메뉴 위치 초기화
 		setPosition({ row: 0, column: 0 });
+
+		// 이름 중복확인 msgBox도 초기화
+		if (msgBox.current) {
+			msgBox.current.textContent = '';
+		}
 	}
 
 	// 초기화 버튼 눌렀을 때
