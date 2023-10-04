@@ -24,6 +24,7 @@ const initialState = {
 	showAllMenusWithOptions: [] as menuWithOptions[],
 	addToOrderLists: [] as orderLists[],
 	removeFromOrderLists : [] as orderLists[],
+	resetAllOrders: [] as orderLists[],
 }
 
 const menuOrderFormSlice = createSlice({
@@ -46,12 +47,15 @@ const menuOrderFormSlice = createSlice({
 				state.addToOrderLists.push(action.payload);
 			}
 		},
-		RemoveFromOrderLists(state, action: PayloadAction<number>) { // 주문 목록에서 제거하기
+		RemoveFromOrderLists(state, action: PayloadAction<number>) { // 주문 목록에서 1개씩 제거하기
 			state.addToOrderLists.splice(action.payload, 1);
+		},
+		ResetAllOrders(state) {
+			state.addToOrderLists = [];
 		}
 	}
 });
 
-export const { AllMenusWithOptions, AddToOrderLists, RemoveFromOrderLists } = menuOrderFormSlice.actions;
+export const { AllMenusWithOptions, AddToOrderLists, RemoveFromOrderLists, ResetAllOrders } = menuOrderFormSlice.actions;
 
 export default menuOrderFormSlice.reducer;

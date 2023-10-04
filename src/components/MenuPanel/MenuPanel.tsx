@@ -7,7 +7,7 @@ import Category from '@/components/MenuPanel/Category';
 import MenuBlock from '@/components/MenuPanel/MenuBlock';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-import { RemoveFromOrderLists } from '@/store/slices/menuOrderFormSlice';
+import { RemoveFromOrderLists, ResetAllOrders } from '@/store/slices/menuOrderFormSlice';
 
 
 const MenuPanel = () => {
@@ -35,9 +35,9 @@ const MenuPanel = () => {
 		}
 	}
 
+	// 주문 목록에 추가했던 목록 전부 초기화
 	const resetAllSelectedMenus = () => {
-		// 선택했던 메뉴 초기화 함수
-		// redux slice 추가로 만들어서 구현 예정
+		dispatch(ResetAllOrders());
 	}
 
 	// 주문할 메뉴 개수 총합
